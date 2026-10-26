@@ -1,0 +1,50 @@
+@startuml
+title Module 2 — Display  ·  parts and wiring
+hide stereotype
+
+!include <tupadr3/font-awesome-5/server>
+!include <tupadr3/font-awesome-5/database>
+!include <tupadr3/font-awesome-5/video>
+!include <tupadr3/font-awesome-5/tv>
+!include <tupadr3/font-awesome-5/plug>
+
+skinparam backgroundColor #F7F6F3
+skinparam shadowing false
+skinparam roundCorner 16
+skinparam dpi 150
+skinparam defaultFontName Segoe UI
+skinparam defaultFontSize 13
+skinparam defaultFontColor #243038
+skinparam titleFontSize 18
+skinparam titleFontColor #243038
+skinparam ArrowColor #5C6B73
+skinparam ArrowFontSize 12
+skinparam ArrowFontColor #3D4A52
+skinparam nodesep 22
+skinparam ranksep 26
+skinparam padding 10
+skinparam package {
+  FontColor #243038
+  FontStyle bold
+}
+
+left to right direction
+
+package "On the Raspberry Pi" #F4F8FC;line:2C5F8A {
+  rectangle "<color:#2C5F8A><$database></color>\n<b>Memory card</b>\nScene video files\n1920 x 1080 loops" as card #E4EEF8;line:2C5F8A
+  rectangle "<color:#6A4C9A><$video></color>\n<b>mpv</b>\nDisplay service\nPlays the plan's scenes" as player #F1EAF8;line:6A4C9A
+  rectangle "<color:#2C5F8A><$server></color>\n<b>Raspberry Pi 5</b>\nHDMI port 0\nNo separate display controller" as pi #E4EEF8;line:2C5F8A
+}
+
+package "In the room" #F8F4FC;line:6A4C9A {
+  rectangle "<color:#6A4C9A><$tv></color>\n<b>Projector or TV</b>\nShows the nature scene\nBuy after a light test in the room" as screen #F1EAF8;line:6A4C9A
+  rectangle "<color:#8A6A1F><$plug></color>\n<b>Display power adapter</b>\nThe projector or TV's own mains\nNot the Pi supply\nNot the aroma 5 V rail" as mains #F8F1D8;line:8A6A1F
+}
+
+card -[#2C5F8A]-> player : scene file
+player -[#6A4C9A]-> pi : picture
+pi -[#6A4C9A]-> screen : micro-HDMI to HDMI cable\nThe only link to this module
+mains -[#8A6A1F]-> screen : mains power
+
+footer This module has no ESP32 and no cable to the speaker or the nebulizers.
+@enduml

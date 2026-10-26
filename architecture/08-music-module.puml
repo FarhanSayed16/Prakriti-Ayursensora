@@ -1,0 +1,52 @@
+@startuml
+title Module 3 — Music  ·  parts and wiring
+hide stereotype
+
+!include <tupadr3/font-awesome-5/server>
+!include <tupadr3/font-awesome-5/database>
+!include <tupadr3/font-awesome-5/music>
+!include <tupadr3/font-awesome-5/volume_up>
+!include <tupadr3/font-awesome-5/plug>
+
+skinparam backgroundColor #F7F6F3
+skinparam shadowing false
+skinparam roundCorner 16
+skinparam dpi 150
+skinparam defaultFontName Segoe UI
+skinparam defaultFontSize 13
+skinparam defaultFontColor #243038
+skinparam titleFontSize 18
+skinparam titleFontColor #243038
+skinparam ArrowColor #5C6B73
+skinparam ArrowFontSize 12
+skinparam ArrowFontColor #3D4A52
+skinparam nodesep 22
+skinparam ranksep 26
+skinparam padding 10
+skinparam package {
+  FontColor #243038
+  FontStyle bold
+}
+
+left to right direction
+
+package "On the Raspberry Pi" #F4F8FC;line:2C5F8A {
+  rectangle "<color:#2C5F8A><$database></color>\n<b>Memory card</b>\nRaga audio files" as card #E4EEF8;line:2C5F8A
+  rectangle "<color:#B86A28><$music></color>\n<b>mpv</b>\nMusic service\nVolume is capped" as player #FBF1E4;line:B86A28
+  rectangle "<color:#2C5F8A><$server></color>\n<b>Raspberry Pi 5</b>\nNo headphone socket\nNo separate music controller" as pi #E4EEF8;line:2C5F8A
+}
+
+package "In the room" #FDF8F2;line:B86A28 {
+  rectangle "<color:#B86A28><$music></color>\n<b>USB audio adapter</b>\nPlugs into a Pi USB port" as usb #FBF1E4;line:B86A28
+  rectangle "<color:#B86A28><$volume_up></color>\n<b>10 W speaker</b>\nAUX input\nHeadphones can share this socket" as speaker #FBF1E4;line:B86A28
+  rectangle "<color:#8A6A1F><$plug></color>\n<b>Speaker power</b>\nIts own adapter or USB\nNot the aroma 5 V rail" as mains #F8F1D8;line:8A6A1F
+}
+
+card -[#2C5F8A]-> player : raga file
+player -[#B86A28]-> pi : sound
+pi -[#B86A28]-> usb : USB
+usb -[#B86A28]-> speaker : 3.5 mm cable
+mains -[#8A6A1F]-> speaker : speaker power
+
+footer This module has no ESP32 and no cable to the projector or the nebulizers.
+@enduml

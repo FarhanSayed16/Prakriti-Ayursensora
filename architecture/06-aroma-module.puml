@@ -1,0 +1,69 @@
+@startuml
+title Module 1 — Aroma  ·  what is decided and what is not
+hide stereotype
+
+!include <tupadr3/font-awesome-5/server>
+!include <tupadr3/font-awesome-5/microchip>
+!include <tupadr3/font-awesome-5/flask>
+!include <tupadr3/font-awesome-5/wind>
+!include <tupadr3/font-awesome-5/shield_alt>
+!include <tupadr3/font-awesome-5/plug>
+!include <tupadr3/font-awesome-5/question>
+
+skinparam backgroundColor #F7F6F3
+skinparam shadowing false
+skinparam roundCorner 16
+skinparam dpi 150
+skinparam defaultFontName Segoe UI
+skinparam defaultFontSize 13
+skinparam defaultFontColor #243038
+skinparam titleFontSize 18
+skinparam titleFontColor #243038
+skinparam ArrowColor #5C6B73
+skinparam ArrowFontSize 12
+skinparam ArrowFontColor #3D4A52
+skinparam nodesep 16
+skinparam ranksep 26
+skinparam padding 8
+skinparam package {
+  FontColor #243038
+  FontStyle bold
+}
+
+left to right direction
+
+rectangle "<color:#2C5F8A><$server></color>\n<b>Raspberry Pi 5</b>\nSends the mist plan\nOwn 27 W supply" as pi #E4EEF8;line:2C5F8A
+
+rectangle "<color:#2F7D57><$microchip></color>\n<b>ESP32</b>\nUSB commands only\nGPIO map not frozen\nChip power from USB" as esp #E5F4EC;line:2F7D57
+
+package "Aroma power  ·  required, not built" #FDF8F1;line:8A6A1F {
+  rectangle "<color:#8A6A1F><$plug></color>\n<b>Aroma supply</b>\nCurrent not calculated\nNot the 6–7 A guess" as psu #F8F1D8;line:8A6A1F
+  rectangle "<color:#A34545><$shield_alt></color>\n<b>Physical e-stop</b>\nBreaks actuator power\nNot a GPIO\nNot tested" as estop #FDECEC;line:A34545
+}
+
+package "Loads the stop must de-energise" #F3FBF6;line:2F7D57 {
+  rectangle "<color:#2F7D57><$flask></color>\n<b>One nebulizer first</b>\nModel and enable pin unknown\nWater only on the bench" as neb #E5F4EC;line:2F7D57
+  rectangle "<color:#2F7D57><$wind></color>\n<b>Shared-outlet fan</b>\nUNRESOLVED\nDO NOT FREEZE WIRING\nNo GPIO 18" as fan #E5F4EC;line:2F7D57
+}
+
+package "Still open" #F4F8FC;line:3E5A70 {
+  rectangle "<color:#3E5A70><$question></color>\n<b>Control interface</b>\nEnable pin or switched supply\nNo MOSFET values\nPause and lamp pins unset" as ctrl #EEF2F5;line:3E5A70
+  rectangle "<color:#3E5A70><$question></color>\n<b>Shared outlet</b>\nCarry-over, backflow,\nand cleaning not assessed" as outlet #EEF2F5;line:3E5A70
+  rectangle "<color:#3E5A70><$question></color>\n<b>BME680</b>\nEnvironment log only\nNot an inhaled-dose meter" as bme #EEF2F5;line:3E5A70
+}
+
+pi -[#2C5F8A]-> esp : USB data cable\nJSON
+
+psu -[#8A6A1F]-> estop : aroma power
+estop -[#A34545]-> neb : power while released
+estop -[#A34545]-> fan : aerosol-fan power\nwhile released
+
+esp -[#3E5A70]-> ctrl : no pin assigned
+
+neb -[#2F7D57]-> outlet : mist path, carry-over open
+fan -[#2F7D57]-> outlet
+
+esp -[hidden]down-> bme
+
+footer No pin is assigned. GPIO 18, GPIO 5, and GPIO 2 are withdrawn. Releasing the stop or rebooting does not start mist.
+@enduml

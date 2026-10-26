@@ -1,0 +1,118 @@
+@startuml
+title Prakriti Ayursensora — how a session's data reaches the team
+hide stereotype
+
+skinparam backgroundColor #F7F6F3
+skinparam shadowing false
+skinparam dpi 150
+skinparam defaultFontName Segoe UI
+skinparam defaultFontSize 13
+skinparam defaultFontColor #243038
+skinparam titleFontSize 18
+skinparam titleFontColor #243038
+skinparam sequence {
+  ArrowColor #5C6B73
+  ArrowFontColor #3D4A52
+  ArrowFontSize 12
+  LifeLineBorderColor #C9D1D6
+  LifeLineBackgroundColor #F7F6F3
+  ParticipantFontColor #243038
+  ParticipantFontSize 12
+  GroupBorderColor #D5DBE0
+  GroupBackgroundColor #FBFBF9
+  GroupHeaderFontColor #243038
+  GroupFontSize 13
+  BoxBorderColor #E4E0D8
+  BoxFontColor #243038
+  DividerBackgroundColor #EFEAE2
+  DividerFontColor #243038
+}
+
+skinparam participant<<person>> {
+  BackgroundColor #E7F6F8
+  BorderColor #1C7C8C
+}
+skinparam participant<<clinician>> {
+  BackgroundColor #F1EAF8
+  BorderColor #6A4C9A
+}
+skinparam participant<<api>> {
+  BackgroundColor #E4EEF8
+  BorderColor #2C5F8A
+}
+skinparam participant<<data>> {
+  BackgroundColor #EEF2F5
+  BorderColor #3E5A70
+}
+skinparam participant<<display>> {
+  BackgroundColor #F1EAF8
+  BorderColor #6A4C9A
+}
+skinparam participant<<music>> {
+  BackgroundColor #FBF1E4
+  BorderColor #B86A28
+}
+skinparam participant<<aroma>> {
+  BackgroundColor #E5F4EC
+  BorderColor #2F7D57
+}
+skinparam participant<<team>> {
+  BackgroundColor #F8F1D8
+  BorderColor #8A6A1F
+}
+
+actor "Staff" as Staff <<person>>
+actor "Clinician" as Clinician <<clinician>>
+participant "FastAPI\nweb app" as API <<api>>
+database "SQLite\non the Pi" as DB <<data>>
+participant "Orchestrator" as Orch <<api>>
+participant "Display\nmpv" as Display <<display>>
+participant "Music\nmpv" as Music <<music>>
+participant "ESP32\naroma" as ESP <<aroma>>
+actor "Research\nteam" as Team <<team>>
+
+== Enrol ==
+Staff -> API : Create participant code\nand record consent
+API -> DB : Save code and consent\nNo name is stored
+Staff -> API : Submit the questionnaire
+API -> DB : Save each answer
+API -> DB : Save provisional scores\nVata, Pitta, Kapha
+
+== Confirm ==
+Clinician -> API : Review the scores\nand confirm the label
+API -> DB : Save confirmed profile,\nblend weights, rule version
+
+== Run one session ==
+Staff -> API : Start
+API -> Orch : Confirmed profile\n+ current-state check
+Orch -> DB : Store the session plan
+par Picture, sound, and mist follow the same plan
+  Orch -> Display : Scene pool and time share
+  Display --> Orch : Scene started
+  Orch -> Music : Raga pool, volume cap
+  Music --> Orch : Track started
+  Orch -> ESP : Mist pulses\nUSB serial JSON
+  ESP --> Orch : Ack, temperature,\nhumidity, faults
+end
+Orch -> DB : Write events and readings
+Staff -> API : Pause or stop
+API -> Orch : Stop
+Orch -> ESP : Mist off
+Orch -> Display : Fade picture
+Orch -> Music : Fade sound
+Orch -> DB : Close the session
+
+== What the team receives ==
+Team -> API : Export study pack
+API -> DB : Read codes, scores,\nsessions, events, readings
+API --> Team : Zip on the laptop\nparticipants, results,\nsessions, events, env, outcomes
+
+note over DB, Team
+  PSS, HADS, and PSQI are typed in by the clinical team.
+  They are stored for the study. They do not drive the hardware.
+  The hospital keeps the list that matches a code to a person.
+  That list is not inside the zip.
+end note
+
+footer Live view is the phone dashboard. The lasting copy is the zip exported from the Pi.
+@enduml

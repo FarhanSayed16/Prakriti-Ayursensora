@@ -1,0 +1,53 @@
+@startuml
+title Prakriti Ayursensora — who uses the unit
+hide stereotype
+
+!include <tupadr3/font-awesome-5/mobile_alt>
+!include <tupadr3/font-awesome-5/user_md>
+!include <tupadr3/font-awesome-5/file_export>
+!include <tupadr3/font-awesome-5/server>
+!include <tupadr3/font-awesome-5/clipboard_list>
+!include <tupadr3/font-awesome-5/shield_alt>
+
+skinparam backgroundColor #F7F6F3
+skinparam shadowing false
+skinparam roundCorner 16
+skinparam dpi 150
+skinparam defaultFontName Segoe UI
+skinparam defaultFontSize 13
+skinparam defaultFontColor #243038
+skinparam titleFontSize 18
+skinparam titleFontColor #243038
+skinparam ArrowColor #5C6B73
+skinparam ArrowFontSize 12
+skinparam ArrowFontColor #3D4A52
+skinparam nodesep 24
+skinparam ranksep 28
+skinparam padding 10
+
+rectangle "<color:#1C7C8C><$mobile_alt></color>\n<b>Staff / nurse</b>\nPhone browser" as staff #E7F6F8;line:1C7C8C
+package "Ayursensora unit" #F4F8FC;line:2C5F8A {
+  rectangle "<color:#2C5F8A><$server></color>\n<b>One local unit</b>\nProfile, aroma, display, music, log\nCode only. No name. No internet." as unit #E4EEF8;line:2C5F8A
+}
+rectangle "<color:#3E5A70><$file_export></color>\n<b>Research team</b>\nHarshali, Seema, build lead" as team #EEF2F5;line:3E5A70
+
+rectangle "<color:#6B7280><$shield_alt></color>\n<b>Hospital identity map</b>\nReal name stays here" as hospital #F4F5F6;line:6B7280
+rectangle "<color:#6A4C9A><$user_md></color>\n<b>Clinician</b>\nConfirms Prakriti" as clinician #F1EAF8;line:6A4C9A
+rectangle "<color:#8A6A1F><$clipboard_list></color>\n<b>Existing website</b>\nOptional import only" as web #F8F1D8;line:8A6A1F
+
+staff -[hidden]right-> unit
+unit -[hidden]right-> team
+hospital -[hidden]right-> clinician
+clinician -[hidden]right-> web
+staff -[hidden]down-> hospital
+unit -[hidden]down-> clinician
+team -[hidden]down-> web
+
+staff -[#1C7C8C]-> unit : Enrol by code\nStart, pause, stop
+unit -[#3E5A70]-> team : Study-pack zip
+clinician -[#6A4C9A]-> unit : Confirm\nVata, Pitta, Kapha
+web -[#8A6A1F].-> unit : Optional score file
+staff -[#6B7280]-> hospital : Match code\nto the person
+
+footer Phase I  ·  local unit  ·  names never sit on the Pi
+@enduml

@@ -1,0 +1,60 @@
+@startuml
+title Prakriti Ayursensora — session lifecycle
+
+skinparam backgroundColor #F7F6F3
+skinparam shadowing false
+skinparam roundCorner 14
+skinparam dpi 150
+skinparam defaultFontName Segoe UI
+skinparam defaultFontSize 13
+skinparam defaultFontColor #243038
+skinparam titleFontSize 18
+skinparam titleFontColor #243038
+skinparam ArrowColor #5C6B73
+skinparam ArrowFontSize 12
+skinparam ArrowFontColor #3D4A52
+skinparam nodesep 30
+skinparam ranksep 18
+skinparam state {
+  BackgroundColor #E4EEF8
+  BorderColor #2C5F8A
+  FontColor #243038
+  StartColor #2F7D57
+  EndColor #3E5A70
+}
+
+top to bottom direction
+
+state "IDLE\nWaiting for a person" as IDLE #E4EEF8;line:2C5F8A
+state "INTAKE\nCode and consent" as INTAKE #E7F6F8;line:1C7C8C
+state "PROFILE READY\nClinician confirmed the scores" as PROFILE #F1EAF8;line:6A4C9A
+state "PRECHECK\nCups, media, exclusions\nIf checks fail, return to IDLE" as PRECHECK #F8F1D8;line:8A6A1F
+state "RAMP IN\nPicture and music fade in\nMist is still off" as RAMP #E5F4EC;line:2F7D57
+state "RUNNING\nAroma, display, and music\nfollow one plan" as RUNNING #E5F4EC;line:2F7D57
+state "WIND DOWN\nMist off first,\nthen picture and sound" as WIND #E4EEF8;line:2C5F8A
+state "ENDED\nLog closed\nReady for the next person" as ENDED #EEF2F5;line:3E5A70
+
+state "PAUSED\nMist off immediately\nResume returns to RUNNING" as PAUSED #FBF1E4;line:B86A28
+state "FAULT\nAroma forced off\nPicture and music may continue" as FAULT #FDECEC;line:A34545
+state "SAFE OFF\nE-stop or power cut\nNext boot is IDLE\nMist does not resume" as SAFE #FDECEC;line:A34545
+
+[*] -down-> IDLE
+IDLE -down-> INTAKE : Enrol
+INTAKE -down-> PROFILE : Answers saved
+PROFILE -down-> PRECHECK : Start
+PRECHECK -down-> RAMP : Checks pass
+RAMP -down-> RUNNING
+RUNNING -down-> WIND : Time ends
+WIND -down-> ENDED
+ENDED -down-> [*]
+
+RUNNING -right-> PAUSED : Pause
+PAUSED -[hidden]down-> FAULT
+FAULT -[hidden]down-> SAFE
+PAUSED -down-> WIND : Stop
+RUNNING -right-> FAULT : Leak, empty cup,\nor lost heartbeat
+FAULT -down-> WIND : End session
+RUNNING -right-> SAFE : E-stop
+
+footer Every ending comes back to IDLE. A mist session never restarts by itself.
+@enduml

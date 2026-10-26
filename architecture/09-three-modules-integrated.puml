@@ -1,0 +1,67 @@
+@startuml
+title All three modules — joined only at the Pi
+hide stereotype
+
+!include <tupadr3/font-awesome-5/mobile_alt>
+!include <tupadr3/font-awesome-5/server>
+!include <tupadr3/font-awesome-5/database>
+!include <tupadr3/font-awesome-5/plug>
+!include <tupadr3/font-awesome-5/microchip>
+!include <tupadr3/font-awesome-5/flask>
+!include <tupadr3/font-awesome-5/tv>
+!include <tupadr3/font-awesome-5/music>
+
+skinparam backgroundColor #F7F6F3
+skinparam shadowing false
+skinparam roundCorner 16
+skinparam dpi 150
+skinparam defaultFontName Segoe UI
+skinparam defaultFontSize 13
+skinparam defaultFontColor #243038
+skinparam titleFontSize 18
+skinparam titleFontColor #243038
+skinparam ArrowColor #5C6B73
+skinparam ArrowFontSize 12
+skinparam ArrowFontColor #3D4A52
+skinparam nodesep 18
+skinparam ranksep 22
+skinparam padding 8
+skinparam package {
+  FontColor #243038
+  FontStyle bold
+}
+
+rectangle "<color:#1C7C8C><$mobile_alt></color>\n<b>Staff phone</b>\nStart, pause, stop" as phone #E7F6F8;line:1C7C8C
+
+package "Shared  ·  not a fourth module" #F4F8FC;line:2C5F8A {
+  rectangle "<color:#8A6A1F><$plug></color>\n<b>Pi supply</b>\n27 W USB-C\nPowers the Pi only" as piPsu #F8F1D8;line:8A6A1F
+  rectangle "<color:#2C5F8A><$server></color>\n<b>Raspberry Pi 5</b>\nProfile, plan,\nvideo, audio, log" as pi #E4EEF8;line:2C5F8A
+  rectangle "<color:#2C5F8A><$database></color>\n<b>128 GB card</b>\nSystem, database,\nscene videos, raga audio" as card #E4EEF8;line:2C5F8A
+}
+
+package "1  Aroma" #F3FBF6;line:2F7D57 {
+  rectangle "<color:#2F7D57><$microchip></color>\n<b>ESP32</b>\nUSB from the Pi" as esp #E5F4EC;line:2F7D57
+  rectangle "<color:#2F7D57><$flask></color>\n<b>Mist hardware</b>\n3 nebulizers, shared fan\nControl circuit not frozen\nOwn supply, current unknown\nE-stop required, not built" as mist #E5F4EC;line:2F7D57
+}
+
+package "2  Display" #F8F4FC;line:6A4C9A {
+  rectangle "<color:#6A4C9A><$tv></color>\n<b>Projector or TV</b>\nOwn mains adapter\nScenes are files on the Pi" as screen #F1EAF8;line:6A4C9A
+}
+
+package "3  Music" #FDF8F2;line:B86A28 {
+  rectangle "<color:#B86A28><$music></color>\n<b>Speaker</b>\nUSB audio adapter, 3.5 mm\nOwn power\nRagas are files on the Pi" as speaker #FBF1E4;line:B86A28
+}
+
+phone -[#1C7C8C]-> pi : Wi-Fi HTTPS
+piPsu -[#8A6A1F]-> pi
+card -[#2C5F8A]-> pi
+pi -[#2F7D57]-> esp : USB serial
+esp -[#2F7D57]-> mist : control interface\nnot frozen
+pi -[#6A4C9A]-> screen : micro-HDMI
+pi -[#B86A28]-> speaker : USB audio
+
+esp -[hidden]down-> screen
+screen -[hidden]down-> speaker
+
+footer No cable runs from aroma to display, or from display to music. A full session uses all three links at once.
+@enduml

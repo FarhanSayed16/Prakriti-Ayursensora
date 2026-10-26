@@ -1,0 +1,77 @@
+@startuml
+title Prakriti Ayursensora — software stack
+hide stereotype
+
+!include <tupadr3/font-awesome-5/mobile_alt>
+!include <tupadr3/font-awesome-5/server>
+!include <tupadr3/font-awesome-5/cogs>
+!include <tupadr3/font-awesome-5/video>
+!include <tupadr3/font-awesome-5/music>
+!include <tupadr3/font-awesome-5/sitemap>
+!include <tupadr3/font-awesome-5/database>
+!include <tupadr3/font-awesome-5/file_export>
+!include <tupadr3/font-awesome-5/microchip>
+!include <tupadr3/font-awesome-5/shield_alt>
+
+skinparam backgroundColor #F7F6F3
+skinparam shadowing false
+skinparam roundCorner 16
+skinparam dpi 150
+skinparam defaultFontName Segoe UI
+skinparam defaultFontSize 13
+skinparam defaultFontColor #243038
+skinparam titleFontSize 18
+skinparam titleFontColor #243038
+skinparam ArrowColor #5C6B73
+skinparam ArrowFontSize 12
+skinparam ArrowFontColor #3D4A52
+skinparam nodesep 16
+skinparam ranksep 20
+skinparam padding 8
+
+skinparam package {
+  FontColor #243038
+  FontStyle bold
+}
+top to bottom direction
+
+package "Staff device" #F3FBFC;line:1C7C8C {
+  rectangle "<color:#1C7C8C><$mobile_alt></color>\n<b>Phone browser</b>\nNo app to install" as browser #E7F6F8;line:1C7C8C
+}
+
+package "Application on the Raspberry Pi 5" #F4F8FC;line:2C5F8A {
+  rectangle "<color:#2C5F8A><$server></color>\n<b>FastAPI</b>\nPages, roles,\nscoring, export" as api #E4EEF8;line:2C5F8A
+  rectangle "<color:#3E5A70><$database></color>\n<b>SQLite</b>\nCodes, scores,\nplans, events" as db #EEF2F5;line:3E5A70
+  rectangle "<color:#2C5F8A><$cogs></color>\n<b>Orchestrator</b>\nOne session plan" as orch #E4EEF8;line:2C5F8A
+  rectangle "<color:#3E5A70><$sitemap></color>\n<b>Mosquitto</b>\nMQTT, localhost only" as mqtt #EEF2F5;line:3E5A70
+  rectangle "<color:#6A4C9A><$video></color>\n<b>Display service</b>\nmpv plays scenes" as disp #F1EAF8;line:6A4C9A
+  rectangle "<color:#B86A28><$music></color>\n<b>Music service</b>\nmpv, volume capped" as mus #FBF1E4;line:B86A28
+}
+
+package "Files on the Pi" #F6F8FA;line:3E5A70 {
+  rectangle "<color:#3E5A70><$file_export></color>\n<b>Media folder</b>\nScene videos and raga audio" as media #EEF2F5;line:3E5A70
+}
+
+package "Aroma controller" #F3FBF6;line:2F7D57 {
+  rectangle "<color:#2F7D57><$microchip></color>\n<b>ESP32 firmware</b>\nPlatformIO" as fw #E5F4EC;line:2F7D57
+  rectangle "<color:#A34545><$shield_alt></color>\n<b>Hard limits</b>\nHeartbeat, dry cup,\nleak, e-stop, boot off" as limits #FDECEC;line:A34545
+}
+
+package "Operating system" #FBFBF9;line:8A8478 {
+  rectangle "<color:#5C564C><$server></color>\n<b>Raspberry Pi OS</b>\nsystemd starts the services\nA watchdog reboots a hung Pi" as os #F3F1EC;line:8A8478
+}
+
+browser -[#1C7C8C]-> api : HTTPS
+api -[#3E5A70]-> db : Save and export
+api -[#2C5F8A]-> orch : Start, pause, stop
+orch -[#3E5A70]-> mqtt
+mqtt -[#6A4C9A]-> disp
+mqtt -[#B86A28]-> mus
+disp -[#6A4C9A]-> media
+mus -[#B86A28]-> media
+orch -[#2F7D57]-> fw : USB serial\nAroma is not on MQTT
+fw -[#A34545]-> limits
+api -[hidden]down-> os
+
+footer The phone talks only to FastAPI. The ESP32 never joins Wi-Fi. MQTT stays inside the Pi.
+@enduml
