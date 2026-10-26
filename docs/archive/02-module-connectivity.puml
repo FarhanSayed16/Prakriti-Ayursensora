@@ -1,0 +1,77 @@
+@startuml
+title Prakriti Ayursensora — how the three modules connect
+hide stereotype
+
+!include <tupadr3/font-awesome-5/mobile_alt>
+!include <tupadr3/font-awesome-5/server>
+!include <tupadr3/font-awesome-5/microchip>
+!include <tupadr3/font-awesome-5/flask>
+!include <tupadr3/font-awesome-5/wind>
+!include <tupadr3/font-awesome-5/shield_alt>
+!include <tupadr3/font-awesome-5/tv>
+!include <tupadr3/font-awesome-5/music>
+!include <tupadr3/font-awesome-5/plug>
+!include <tupadr3/font-awesome-5/database>
+
+skinparam backgroundColor #F7F6F3
+skinparam shadowing false
+skinparam roundCorner 16
+skinparam dpi 150
+skinparam defaultFontName Segoe UI
+skinparam defaultFontSize 13
+skinparam defaultFontColor #243038
+skinparam titleFontSize 18
+skinparam titleFontColor #243038
+skinparam ArrowColor #5C6B73
+skinparam ArrowFontSize 12
+skinparam ArrowFontColor #3D4A52
+skinparam nodesep 18
+skinparam ranksep 22
+skinparam padding 8
+
+skinparam package {
+  FontColor #243038
+  FontStyle bold
+}
+
+rectangle "<color:#1C7C8C><$mobile_alt></color>\n<b>Staff phone</b>\nStart, pause, stop, log" as phone #E7F6F8;line:1C7C8C
+
+package "Shared brain" #F4F8FC;line:2C5F8A {
+  rectangle "<color:#2C5F8A><$server></color>\n<b>Raspberry Pi 5</b>\nProfile, plan, video, audio" as pi #E4EEF8;line:2C5F8A
+  rectangle "<color:#2C5F8A><$database></color>\n<b>128 GB card</b>\nSystem, database,\nvideos, ragas" as card #E4EEF8;line:2C5F8A
+  rectangle "<color:#8A6A1F><$plug></color>\n<b>Pi supply</b>\nOfficial 27 W USB-C\nPowers the Pi only" as piPsu #F8F1D8;line:8A6A1F
+}
+
+package "1  Aroma" #F3FBF6;line:2F7D57 {
+  rectangle "<color:#2F7D57><$microchip></color>\n<b>ESP32</b>\nOnly board that\nswitches the mist" as esp #E5F4EC;line:2F7D57
+  rectangle "<color:#2F7D57><$flask></color>\n<b>3 nebulizers</b>\nVata, Pitta, Kapha\nOne MOSFET each" as mist #E5F4EC;line:2F7D57
+  rectangle "<color:#2F7D57><$wind></color>\n<b>One 5 V fan</b>\nShared mist outlet" as fan #E5F4EC;line:2F7D57
+  rectangle "<color:#A34545><$shield_alt></color>\n<b>Safety</b>\nFloats, leak tray,\n5 V rail, e-stop" as safe #FDECEC;line:A34545
+}
+
+package "2  Display" #F8F4FC;line:6A4C9A {
+  rectangle "<color:#6A4C9A><$tv></color>\n<b>Projector or TV</b>\nOwn mains adapter\nScene files stay on the Pi" as screen #F1EAF8;line:6A4C9A
+}
+
+package "3  Music" #FDF8F2;line:B86A28 {
+  rectangle "<color:#B86A28><$music></color>\n<b>10 W speaker</b>\nAUX in, own power\nHeadphones can share it" as speaker #FBF1E4;line:B86A28
+}
+
+phone -[#1C7C8C]-> pi : Wi-Fi HTTPS\nPi hotspot
+piPsu -[#8A6A1F]-> pi
+card -[#2C5F8A]-> pi
+
+pi -[#2F7D57]-> esp : USB serial\nJSON commands
+esp -[#2F7D57]-> mist : GPIO gates
+esp -[#2F7D57]-> fan : PWM
+safe -[#A34545]-> esp : water, leak, stop
+safe -[#A34545]-> mist : e-stop cuts 5 V
+
+pi -[#6A4C9A]-> screen : micro-HDMI
+pi -[#B86A28]-> speaker : USB audio adapter
+
+esp -[hidden]down-> screen
+screen -[hidden]down-> speaker
+
+footer Aroma, display, and music do not plug into each other. Each one plugs into the Pi. A full session uses all three.
+@enduml
