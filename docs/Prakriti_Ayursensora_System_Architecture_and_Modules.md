@@ -53,7 +53,7 @@ Phase I uses a local stack. No cloud account is required for a session to run. T
 
 | Software | Role |
 |---|---|
-| **Raspberry Pi OS** 64-bit (Bookworm) | Operating system. Services start with `systemd`. A hardware watchdog reboots a hung Pi. |
+| **Raspberry Pi OS** 64-bit, current supported image | Operating system. As of 27 October 2026 the current image is Debian 13 (Trixie). Bookworm is the legacy image and is not the baseline. Services start with `systemd`. Confirm FastAPI, SQLite, mpv, HDMI, USB audio, and serial on the image that is actually installed. |
 | **Python 3 + FastAPI** | The only program the staff browser talks to. Questionnaire, clinician review, session buttons, export. |
 | **SQLite** (WAL mode) | The database. One file on the Pi. Participant code, scores, plans, events, sensor readings, outcome scores. |
 | **Orchestrator** (Python service) | Turns a confirmed profile into a session plan. Commands display, music, and the ESP32. Writes the log. |
@@ -75,7 +75,7 @@ Suggested layout on disk:
 
 | Software | Role |
 |---|---|
-| **Arduino-ESP32** firmware, built with **PlatformIO** | Reads commands from USB serial. Switches MOSFETs. Reads the air sensor, float switches, and leak sensor. Sends status back. |
+| **Arduino-ESP32** firmware, built with **PlatformIO** | Reads commands from USB serial. Commands the aroma outputs once that interface is known. No firmware is in this repository. |
 | **ArduinoJson** | Parses one JSON object per line. |
 | **Adafruit BME680** and **Adafruit SSD1306** | Room sensor and the small status screen. |
 
@@ -91,12 +91,12 @@ A normal browser (Chrome, Edge, or Safari). No app install. The page is served b
 |---|---|---|
 | Profile and questionnaire | FastAPI | Database only |
 | Session plan and safety gating | Orchestrator | MQTT on localhost, USB serial |
-| Aroma | ESP32 firmware | MOSFETs, fan, sensor, OLED, stop sense |
+| Aroma | ESP32 firmware | Nebulizer interface, fan, sensor, OLED, stop sense. The driver circuit is not chosen. |
 | Display | `ayur-display` + mpv | HDMI |
 | Music | `ayur-music` + mpv | USB audio |
 | Live view and export | FastAPI | Database, export folder |
 
-The profile service never switches a MOSFET. The ESP32 never decides which dosha a person is.
+The profile service never drives an aroma output. The ESP32 never decides which dosha a person is.
 
 ---
 
@@ -131,13 +131,13 @@ A failed display or a failed speaker does not turn the others off. Any aroma fau
 | 1 | Raspberry Pi 5 | 4 GB is enough for this phase. The sheet’s 8 GB board is acceptable if it is the one already chosen. | Power, USB, HDMI, SD card |
 | 1 | Official Pi 5 27 W USB-C supply | 5 V / 5 A with USB-PD. The sheet’s 5 V/10 A SMPS and the 3 A buck modules do not power the Pi. | Mains → Pi USB-C power port |
 | 1 | Pi 5 active cooler | Clips onto the Pi. Replaces the loose heatsink-and-paste line for the processor. | Pi thermal pads |
-| 1 | microSD, 128 GB, high-endurance | Holds OS, database, scenes, and ragas. The sheet’s 32 GB cards are too small for video. Keep one spare card with a cloned image. | Pi SD slot |
-| 1 | RTC battery | Coin cell on the Pi 5 RTC header so timestamps survive a power cut. | Pi RTC header |
+| 1 | microSD, 128 GB, high-endurance | Holds OS, database, scenes, and ragas. The sheet’s 32 GB cards are too small for video. One card starts the work. A cloned spare waits. | Pi SD slot |
+| 1 | Official Raspberry Pi RTC battery | Rechargeable ML2020 with the pre-fitted two-pin JST plug, on the Pi 5 RTC connector. A primary CR2032 is the wrong part: the RTC circuit charges the cell. The clock runs while the Pi is powered even without this battery. Fit the official cell when the unit must keep time through a power cut without a network time source. | Pi RTC connector |
 | 1 | USB-A to USB-C cable, data-capable | Pi USB port → ESP32. Carries serial data and powers the ESP32 **chip only**. | See M1 |
 
 ### 4.2 What the Pi does, and does not do
 
-The Pi runs the web app, the database, the orchestrator, MQTT, video, and audio. It does not drive mist MOSFETs from its own GPIO. A crash in the media player must not be what turns a piezo on.
+The Pi runs the web app, the database, the orchestrator, MQTT, video, and audio. It does not drive a nebulizer from its own GPIO. A crash in the media player must not be what turns a piezo on.
 
 ### 4.3 Services started on boot
 
@@ -162,9 +162,9 @@ Purchase quantities are in the buy list. This table is the engineering intent, n
 | Qty in the concept | Part | What is known | Wiring status |
 |---:|---|---|---|
 | 1 | ESP32 development board, 38-pin class | Sheet name only. CP2102 and CH340 boards are not the same schematic. No board schematic is in this repository. | USB to the Pi is decided. GPIO map is not frozen. |
-| 3 | Ultrasonic nebulizer, 5 V, named ACEBOTT 2.4 MHz on the old sheet | No datasheet is in this repository. Water use does not show that the module accepts essential oil. | **UNRESOLVED.** Do not assume a MOSFET on the 5 V pin. The module may have an enable or trigger pin. |
-| — | MOSFET and gate resistors | IRLZ44N, 150 Ω, and 10 kΩ were proposals. No module current is documented. | **UNRESOLVED.** Do not buy a set, and do not assign gate pins, until the nebulizer control method is known. |
-| 1 | Fan for a shared outlet | No fan model and no datasheet are in this repository. | **UNRESOLVED — DO NOT FREEZE WIRING.** See §5.3. |
+| 3 | Ultrasonic nebulizer, 5 V, named ACEBOTT 2.4 MHz on the old sheet | The sheet does not give a model or revision. ACEBOTT’s public page for QB062/QB078 describes a 5 V water humidifier with a falling-edge trigger. That page does not prove the sheet line is that module, does not state a current, and does not approve essential oil. Its sample wiring pin is not an assignment for this project. | **UNRESOLVED.** Match the seller listing to a manufacturer page before buying one sample. Do not assume a MOSFET on the 5 V pin. |
+| — | MOSFET and gate resistors | IRLZ44N, 150 Ω, and 10 kΩ were proposals. Infineon’s IRLZ44N on-resistance is specified at gate voltages such as 4 V, 5 V, and 10 V. That is not evidence a 3.3 V ESP32 pin will switch the real load. A module with its own trigger pin may need no power MOSFET. | **UNRESOLVED.** Do not buy a set, and do not assign gate pins, until the nebulizer control method is known. |
+| 1 | Fan for a shared outlet | No fan model and no datasheet are in this repository. The fan’s electronics also have to stay out of condensate. That air path is not designed. | **UNRESOLVED — DO NOT FREEZE WIRING.** See §5.3. |
 | 3 | Float switch, one per cup | Desired behaviour: an open or unplugged switch means empty. | Parts and pins wait on the reservoir design. |
 | 1 | Leak sensor and drip tray | Desired behaviour: a leak forces mist off. | Not built. |
 | 3 | Cup, tube, connectors | A shared plenum was sketched. Carry-over between scents is not measured. | **UNRESOLVED** until a cleaning and carry-over check exists. |
@@ -194,10 +194,10 @@ WET COMPARTMENT
 SEALED BARRIER
 
 DRY COMPARTMENT
-  Raspberry Pi, ESP32, MOSFETs, supplies, OLED
+  Raspberry Pi, ESP32, any later driver, supplies, OLED
 ```
 
-Cables that cross the barrier go through glands. The Pi and the ESP32 never sit in the mist path. The shared outlet can hold the previous scent. That carry-over, any backflow, and the cleaning method are **unresolved**. Three cups do not by themselves make three isolated air paths.
+Cables that cross the barrier go through glands. The Pi and the ESP32 never sit in the mist path. The shared outlet can hold the previous scent. That carry-over, any backflow, and the cleaning method are **unresolved**. Three cups do not by themselves make three isolated air paths. If a measured purge cannot keep the channels separate, a separate outlet per channel is still an open option. The tube diameter is not chosen.
 
 ### 5.3 ESP32 pins — not frozen
 
@@ -226,7 +226,7 @@ These are requirements. There is no firmware in the repository that implements t
 3. A lost USB link or a missed heartbeat turns mist and that fan off. The timeout value is not frozen.
 4. An open float, a disconnected float wire, or a leak turns mist off.
 5. Pressing the e-stop removes power from the nebulizers and from the fan that pushes mist, even if the ESP32 or the Pi is hung.
-6. Releasing the stop, rebooting the Pi, or rebooting the ESP32 does not start mist again. A person must start a new session.
+6. Releasing the stop, rebooting the Pi, rebooting the ESP32, reconnecting USB, or restoring mains does not start mist again. A person must start a new session. A switch that only restores supply voltage does not by itself prove this re-arm. A signal wire must not back-feed a module whose supply has been opened. The DC contact rating and the branch protection are not chosen.
 7. The BME680 is logged. Its gas signal is not an interlock and is not a measure of inhaled dose.
 8. Any pulse length written in an example is not an exposure limit. Exposure stays on hold until a qualified review sets it.
 
@@ -270,8 +270,8 @@ Only the ESP32 firmware. Python decides **how long**. The ESP32 decides **whethe
 | 1 | Portronics Beem 470, or a 32–43 inch TV | **Open** until the scene is watched in the real room with the lights on. A projector that washes out is replaced by the TV. Either one is the display. | HDMI in, and its **own** mains adapter |
 | 1 | micro-HDMI to HDMI cable, 1.5–2 m | **Added.** Pi 5 has micro-HDMI, not full-size HDMI. Use HDMI port 0. | Pi HDMI0 → display |
 | 1 | Wall mount or a short tripod | So the beam or screen has a fixed place. | Display only |
-| 0 or 1 | WS2812B, 60 LEDs per metre, **1 metre** | Optional colour wash. The sheet’s two 5 m reels are not fitted. At 25% brightness this metre is under 1 A. | 5 V actuator rail, data through a level shifter |
-| 1 | 74AHCT125 level shifter, 330 Ω series resistor, 1000 µF capacitor | **Added**, and only if the LED metre is fitted. The ESP32 data pin is 3.3 V; the strip expects 5 V data. | ESP32 GPIO 13 → shifter → strip DIN |
+| 0 or 1 | WS2812B, 60 LEDs per metre, **1 metre** | Optional colour wash. The sheet’s two 5 m reels are not fitted. Current is not calculated. Not part of the first bench. | Supply and data pin not assigned |
+| 1 | 74AHCT125 level shifter, 330 Ω series resistor, 1000 µF capacitor | Only if that optional strip is later fitted. The ESP32 data pin is 3.3 V; a 5 V strip needs a level shift. | No GPIO is assigned. GPIO 13 is not a wiring release. |
 
 ### 6.2 Picture path
 
@@ -362,7 +362,7 @@ Until a single enclosure is designed, the display adapter and the speaker adapte
 
 **Grounds.** The USB cable already joins Pi ground and ESP32 ground. The aroma supply’s ground joins the ESP32 ground only if the chosen nebulizer or fan interface needs that common reference. Mains protective earth stays on the inlet and on Class I metalwork. It is not assumed to be the same node as logic ground. The projector and the speaker stay on their own adapters, so their secondary circuits are not tied into the aroma rail by this document.
 
-**E-stop, required and not tested.** The stop is a physical break in the power to the nebulizers and to the fan that pushes mist. A GPIO that only reports the button, and a software stop, do not replace that break. With the stop held, those outputs are off. Letting the button go, or rebooting the Pi or the ESP32, does not start mist. No test record of this exists.
+**E-stop, required and not tested.** The stop is a physical break in the power to the nebulizers and to the fan that pushes mist. A GPIO that only reports the button, and a software stop, do not replace that break. With the stop held, those outputs are off. Letting the button go, rebooting either board, reconnecting USB, or restoring power does not start mist. Restoring the 5 V rail is not a start command. No test record of this exists, and no contact rating has been chosen.
 
 There is no 18650 pack and no power bank in this phase. If mains fails, mist, picture, and sound go off, and the next boot is IDLE. The pause button has no GPIO yet. The enclosure is not ordered until the wet path has a measured layout. Breadboards are for the bench, not for the finished liquid path.
 
@@ -521,7 +521,7 @@ Prices stay the sheet’s prices. They are not a new quotation.
 |---:|---|---:|---|---|
 | 1 | Raspberry Pi 5, 8 GB, ₹19,618 | 1 | M0 | **Keep** as the brain. 4 GB is enough if you re-quote. |
 | 2 | Arduino Uno R4 WiFi, ₹1,598 | 1 | — | **Leave out.** The ESP32 is the actuator. |
-| 3 | L298N, ₹146 | 1 | — | **Leave out.** MOSFET switches instead. |
+| 3 | L298N, ₹146 | 1 | — | **Leave out.** No replacement driver is selected. |
 | 4 | ESP32 5-inch touch, ₹3,832 × 2 | 2 | — | **Leave out.** The phone browser is the screen. |
 | 5 | ESP32 dev board, ₹355 | 1 | M1 | **Keep**, and add a spare. |
 | 6 | microSD 32 GB, ₹749 × 2 | 2 | M0 | **Change** to 128 GB high-endurance, plus a spare image. |
@@ -579,7 +579,7 @@ Sheet total printed on the page: **₹2,27,766**. That number includes the tread
 | USB data cable, Pi → ESP32 | The only aroma command path | M0–M1 |
 | micro-HDMI to HDMI cable | Pi 5 video out | M2 |
 | USB audio adapter and 3.5 mm lead | Pi 5 has no audio jack | M3 |
-| RTC battery | Honest timestamps after a power cut | M0 |
+| Official Pi 5 RTC battery, ML2020 with JST plug | Timekeeping through a power cut when no network time source exists. A primary CR2032 is the wrong cell. | M0 |
 | Active cooler | Pi 5 thermal path | M0 |
 | 128 GB high-endurance microSD | Video and audio library | M0 |
 | Nebulizer control parts | Only after the module datasheet names an enable pin or a switched supply. Resistor values are not chosen. | M1 |
@@ -591,7 +591,8 @@ Sheet total printed on the page: **₹2,27,766**. That number includes the tread
 | Pause button | No pin assigned. It is not a substitute for the e-stop. | M4 |
 | 74AHCT125, 330 Ω, 1000 µF | Only if the 1 m LED strip is fitted | M2 |
 | Staff phone or tablet | Already in someone’s pocket; the UI | M5 |
-| Multimeter, 0.01 g scale | Bench current, and mass lost by the test cup. Mass loss is not an inhaled dose. | Tools |
+| Multimeter | Bench current. Buy or use one already owned. | Tools |
+| 0.01 g scale | Optional mass-loss check. Borrow first. Mass loss is not an inhaled dose. | Tools |
 
 ---
 

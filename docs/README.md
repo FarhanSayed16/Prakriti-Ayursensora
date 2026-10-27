@@ -6,8 +6,8 @@ These four files are the project. Read them in this order.
 |---|---|
 | [Problem statement and project understanding](Prakriti_Ayursensora_Problem_Statement_and_Project_Understanding.md) | What the project is, who it is for, the proposal’s mapping, the team, the phases, and what is still open |
 | [System architecture and modules](Prakriti_Ayursensora_System_Architecture_and_Modules.md) | How the Pi, the ESP32, and the three modules connect, which software runs where, and how session data reaches the team |
-| [Three modules component list](Prakriti_Ayursensora_Three_Modules_Component_List.md) | The parts in aroma, display, and music, and the fact that each one plugs into the Pi |
-| [Final buy list](Prakriti_Ayursensora_Final_Buy_List.md) | Each part marked buy now, bench-test first, wait, or omit. The aroma circuit is not an approved order. |
+| [Components and how they connect](Prakriti_Ayursensora_Three_Modules_Component_List.md) | The parts in each module, the exact cables, and the connection chart |
+| [Final component list](Prakriti_Ayursensora_Final_Buy_List.md) | Every part under its module, then the current buy-now list, then the small-parts check |
 
 Diagrams are in `architecture/`. Each `.puml` file is one picture.
 
@@ -23,3 +23,5 @@ Diagrams are in `architecture/`. Each `.puml` file is one picture.
 | `09-three-modules-integrated.puml` | All three modules joined only at the Pi |
 
 `docs/archive` holds the original deck, the component photos, and the earlier drafts. Those are kept for the record. They are not the plan.
+
+`Prakriti_Ayursensora_Component_Finalization_Review.md` and `Prakriti_Ayursensora_Problems_and_Verdict_for_Cursor.md` are review notes. The architecture and the buy list are the current plan. Where a review and those two files disagree, follow the architecture and the buy list.
